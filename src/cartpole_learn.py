@@ -39,7 +39,13 @@ np.set_printoptions(linewidth=500)
 
 # FOR YOU TODO: Fill in this function with a control
 # policy that computes a useful u from the input x
+prev_angle_error = math.pi
+prev_cart_pos = 0.0
+
 def policyfn(x):
+    global prev_angle_error
+    global prev_cart_pos
+
     u = 0
     distance = x[0]
     cart_velocity = x[1]
@@ -51,16 +57,21 @@ def policyfn(x):
     theta_degrees = math.degrees(theta_radians)
 
     pi = math.pi
-    p_tau = 0.2
+    p_tau = 2.0
     d_tau = 3.0
     i_tau = 0.01
 
     angle_error = pi - theta_radians
-    if sin_theta > 0:
-        u = p_tau * angle_error
-    else:
-        u = -p_tau * angle_error
 
+    dt = (distance - prev_cart_pos) / cart_velocity
+    dif_error = (prev_angle_error - angle_error) / dt
+    
+    if sin_theta > 0:
+        u = (p_tau * angle_error) + (d_tau * dif_error)
+    else:
+        u = (-p_tau * angle_error) + (-d_tau * dif_error)
+
+    prev_angle_error = angle_error
 
     # velocity_error = 0 - pendulum_angularV
     # u = p_tau * (angle_error + velocity_error)
@@ -96,6 +107,10 @@ def apply_controller(plant, params, H, policy=None):
 
     sum_of_error = 0
     H_steps = int(np.ceil(H / plant.dt))
+
+    global prev_cart_pos
+    prev_cart_pos = gTrig_np(x_t[None, :], params['angle_dims']).flatten()[0]
+
     for i in xrange(H_steps):
         # convert input angle dimensions to complex representation
         x_t_ = gTrig_np(x_t[None, :], params['angle_dims']).flatten()
