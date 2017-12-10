@@ -47,22 +47,30 @@ def policyfn(x):
     sin_theta = x[3]
     cos_theta = x[4]
 
+    theta_radians = math.acos(cos_theta)
+    theta_degrees = math.degrees(theta_radians)
+
     pi = math.pi
-    cos_theta_optimal = pi
-    p_tau = 0.1
+    p_tau = 0.2
     d_tau = 3.0
     i_tau = 0.01
 
-    angle_error = cos_theta_optimal - math.acos(cos_theta)
-    velocity_error = 0 - pendulum_angularV
-    u = p_tau * (angle_error + velocity_error)
+    angle_error = pi - theta_radians
+    if sin_theta > 0:
+        u = p_tau * angle_error
+    else:
+        u = -p_tau * angle_error
+
+
+    # velocity_error = 0 - pendulum_angularV
+    # u = p_tau * (angle_error + velocity_error)
 
     # print ("X Distance: " + str(distance))
     # print ("Cart Velocity: " + str(cart_velocity))
     # print ("Angular Velocity: " + str(pendulum_angularV))
     # print ("Sin Theta: " + str(sin_theta))
-    print ("Cos Theta: " + str(math.degrees(math.acos(cos_theta))))
-    print ()
+    # print ("Cos Theta: " + str(math.degrees(math.acos(cos_theta))))
+    # print ()
 
     return np.array([u])
 
