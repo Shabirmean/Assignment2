@@ -30,17 +30,19 @@ import numpy as np
 from plant import gTrig_np
 from cartpole import default_params
 from cartpole import CartpoleDraw
-#np.random.seed(31337)
+
+# np.random.seed(31337)
 np.set_printoptions(linewidth=500)
 
-# FOR YOU TODO: Fill in this function with a control 
-# policy that computes a useful u from the input x
-def policyfn( x ):
-    
-    u = 0 
-    return np.array([u])        
 
-def apply_controller(plant,params,H,policy=None):
+# FOR YOU TODO: Fill in this function with a control
+# policy that computes a useful u from the input x
+def policyfn(x):
+    u = 0
+    return np.array([u])
+
+
+def apply_controller(plant, params, H, policy=None):
     '''
     Starts the plant and applies the current policy to the plant for a duration specified by H (in seconds).
 
@@ -55,59 +57,58 @@ def apply_controller(plant,params,H,policy=None):
     x_t, t = plant.get_plant_state()
     if plant.noise is not None:
         # randomize state
-        Sx_t = np.zeros((x_t.shape[0],x_t.shape[0]))
+        Sx_t = np.zeros((x_t.shape[0], x_t.shape[0]))
         L_noise = np.linalg.cholesky(plant.noise)
-        x_t = x_t + np.random.randn(x_t.shape[0]).dot(L_noise);
-    
+        x_t = x_t + np.random.randn(x_t.shape[0]).dot(L_noise)
+
     sum_of_error = 0
-    H_steps = int(np.ceil(H/plant.dt))
+    H_steps = int(np.ceil(H / plant.dt))
     for i in xrange(H_steps):
         # convert input angle dimensions to complex representation
-        x_t_ = gTrig_np(x_t[None,:], params['angle_dims']).flatten()
+        x_t_ = gTrig_np(x_t[None, :], params['angle_dims']).flatten()
         #  get command from policy (this should be fast, or at least account for delays in processing):
         u_t = policy(x_t_)
-       
-	 #  send command to robot:
+
+        #  send command to robot:
         plant.apply_control(u_t)
         plant.step()
         x_t, t = plant.get_plant_state()
         l = plant.params['l']
-	err = np.array([0,l]) - np.array( [ x_t[0] + l*x_t_[3], -l*x_t_[4] ] )  
-        dist = np.dot(err,err )
+        err = np.array([0, l]) - np.array([x_t[0] + l * x_t_[3], -l * x_t_[4]])
+        dist = np.dot(err, err)
         sum_of_error = sum_of_error + dist
 
         if plant.noise is not None:
             # randomize state
-            x_t = x_t + np.random.randn(x_t.shape[0]).dot(L_noise);
-        
+            x_t = x_t + np.random.randn(x_t.shape[0]).dot(L_noise)
+
         if plant.done:
             break
 
-    print "Error this episode %f"%(sum_of_error)
-        
+    print "Error this episode %f" % (sum_of_error)
+
     # stop robot
     plant.stop()
 
+
 def main():
-    
     # learning iterations
-    N = 5   
+    N = 5
     H = 10
-    
+
     learner_params = default_params()
-    plant_params = learner_params['params']['plant'] 
+    plant_params = learner_params['params']['plant']
     plant = learner_params['plant_class'](**plant_params)
-   
+
     draw_cp = CartpoleDraw(plant)
     draw_cp.start()
-    
+
     # loop to run controller repeatedly
     for i in xrange(N):
-        
         # execute it on the robot
         plant.reset_state()
-        apply_controller(plant,learner_params['params'], H, policyfn)
-    
+        apply_controller(plant, learner_params['params'], H, policyfn)
+
+
 if __name__ == '__main__':
     main()
-    
