@@ -39,6 +39,18 @@ np.set_printoptions(linewidth=500)
 # policy that computes a useful u from the input x
 def policyfn(x):
     u = 0
+    distance = x[0]
+    cart_velocity = x[1]
+    pendulum_angularV = x[2]
+    sin_theta = x[4]
+    cos_theta = x[5]
+
+    print ("X Distance: " + str(distance))
+    print ("Cart Velocity: " + str(cart_velocity))
+    print ("Angular Velocity: " + str(pendulum_angularV))
+    print ("Sin Theta: " + str(sin_theta))
+    print ("Cos Theta: " + str(cos_theta))
+
     return np.array([u])
 
 
