@@ -58,7 +58,7 @@ def policyfn(x):
 
     pi = math.pi
     zero = 0.0
-    p_tau = 5.0
+    p_tau = 0.2
     d_tau = 0.0
     i_tau = 0.01
 
@@ -74,11 +74,13 @@ def policyfn(x):
     if sin_theta > 0:
         u_pendulum = (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
         u_cart = (p_tau * cart_state_error) + (d_tau * cart_velocity)
+        u = (p_tau * cart_state_error) + (d_tau * cart_velocity) + (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
     else:
         u_pendulum = (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
         u_cart = (-p_tau * cart_state_error) + (-d_tau * cart_velocity)
+        u = (-p_tau * cart_state_error) + (-d_tau * cart_velocity) + (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
 
-    u = u_cart - u_pendulum
+    # u = u_cart - u_pendulum
 
     # velocity_error = 0 - pendulum_angularV
     # u = p_tau * (angle_error + velocity_error)
