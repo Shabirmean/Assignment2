@@ -42,8 +42,8 @@ def policyfn(x):
     distance = x[0]
     cart_velocity = x[1]
     pendulum_angularV = x[2]
-    sin_theta = x[4]
-    cos_theta = x[5]
+    sin_theta = x[3]
+    cos_theta = x[4]
 
     print ("X Distance: " + str(distance))
     print ("Cart Velocity: " + str(cart_velocity))
