@@ -27,9 +27,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
 import numpy as np
+import math
 from plant import gTrig_np
 from cartpole import default_params
 from cartpole import CartpoleDraw
+
 
 # np.random.seed(31337)
 np.set_printoptions(linewidth=500)
@@ -45,11 +47,23 @@ def policyfn(x):
     sin_theta = x[3]
     cos_theta = x[4]
 
-    print ("X Distance: " + str(distance))
-    print ("Cart Velocity: " + str(cart_velocity))
-    print ("Angular Velocity: " + str(pendulum_angularV))
-    print ("Sin Theta: " + str(sin_theta))
-    print ("Cos Theta: " + str(cos_theta))
+    pi = math.pi
+    cos_theta_optimal = pi
+    p_tau = 0.1
+    d_tau = 3.0
+    i_tau = 0.01
+
+    error = cos_theta_optimal - math.acos(cos_theta)
+    if error > 0:
+        u = p_tau * error
+    else:
+        u = -p_tau * error
+    # print ("X Distance: " + str(distance))
+    # print ("Cart Velocity: " + str(cart_velocity))
+    # print ("Angular Velocity: " + str(pendulum_angularV))
+    # print ("Sin Theta: " + str(sin_theta))
+    # print ("Cos Theta: " + str(cos_theta))
+    # print ()
 
     return np.array([u])
 
