@@ -61,8 +61,8 @@ def policyfn(x):
     # print ("Cart Velocity: " + str(cart_velocity))
     # print ("Angular Velocity: " + str(pendulum_angularV))
     # print ("Sin Theta: " + str(sin_theta))
-    # print ("Cos Theta: " + str(cos_theta))
-    # print ()
+    print ("Cos Theta: " + str(math.degrees(math.acos(cos_theta))))
+    print ()
 
     return np.array([u])
 
