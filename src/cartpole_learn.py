@@ -40,11 +40,11 @@ np.set_printoptions(linewidth=500)
 # FOR YOU TODO: Fill in this function with a control
 # policy that computes a useful u from the input x
 prev_angle_error = math.pi
-prev_cart_pos = 0.0
+# prev_cart_pos = 0.0
 
 def policyfn(x):
     global prev_angle_error
-    global prev_cart_pos
+    # global prev_cart_pos
 
     u = 0
     distance = x[0]
@@ -63,8 +63,8 @@ def policyfn(x):
 
     angle_error = pi - theta_radians
 
-    dt = (distance - prev_cart_pos) / cart_velocity
-    dif_error = (prev_angle_error - angle_error) / dt
+    # dt = (distance - prev_cart_pos) / cart_velocity
+    dif_error = (prev_angle_error - angle_error) / cart_velocity
 
     if sin_theta > 0:
         u = (p_tau * angle_error)
