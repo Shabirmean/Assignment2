@@ -57,23 +57,28 @@ def policyfn(x):
     theta_degrees = math.degrees(theta_radians)
 
     pi = math.pi
+    zero = 0.0
     p_tau = 5.0
-    d_tau = 3.0
+    d_tau = 0.0
     i_tau = 0.01
 
-    angle_error = pi - theta_radians
+    pendulum_position_error = pi - theta_radians
+    cart_position_error = zero - distance
 
-    # dt = (distance - prev_cart_pos) / cart_velocity
-    dif_error = (prev_angle_error - angle_error) / cart_velocity
+    pendulum_speed_error = zero - pendulum_angularV
+    cart_speed_error = zero - cart_velocity
+
+    pendulum_state_error = pendulum_position_error + pendulum_speed_error
+    cart_state_error = cart_position_error + cart_speed_error
 
     if sin_theta > 0:
-        u = (p_tau * angle_error)
-        # u = (p_tau * angle_error) + (d_tau * dif_error)
+        u_pendulum = (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
+        u_cart = (p_tau * cart_state_error) + (d_tau * cart_velocity)
     else:
-        u = (-p_tau * angle_error)
-        # u = (-p_tau * angle_error) + (-d_tau * dif_error)
+        u_pendulum = (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
+        u_cart = (-p_tau * cart_state_error) + (-d_tau * cart_velocity)
 
-    prev_angle_error = angle_error
+    u = u_cart - u_pendulum
 
     # velocity_error = 0 - pendulum_angularV
     # u = p_tau * (angle_error + velocity_error)
