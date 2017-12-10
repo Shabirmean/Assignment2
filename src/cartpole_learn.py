@@ -63,24 +63,24 @@ def policyfn(x):
     i_tau = 0.01
 
     pendulum_position_error = pi - theta_radians
-    cart_position_error = zero - distance
+    if sin_theta < 0:
+        pendulum_position_error = -pendulum_position_error
 
     pendulum_speed_error = zero - pendulum_angularV
-    cart_speed_error = zero - cart_velocity
-
     pendulum_state_error = pendulum_position_error + pendulum_speed_error
+
+    cart_position_error = zero - distance
+    cart_speed_error = zero - cart_velocity
     cart_state_error = cart_position_error + cart_speed_error
 
-    if sin_theta > 0:
-        u_pendulum = (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
-        u_cart = (p_tau * cart_state_error) + (d_tau * cart_velocity)
-        u = (p_tau * cart_state_error) + (d_tau * cart_velocity) + (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
-    else:
-        u_pendulum = (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
-        u_cart = (-p_tau * cart_state_error) + (-d_tau * cart_velocity)
-        u = (-p_tau * cart_state_error) + (-d_tau * cart_velocity) + (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
+    # if sin_theta > 0:
+    u_pendulum = (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
+    u_cart = (p_tau * cart_state_error) + (d_tau * cart_velocity)
+    # else:
+    #     u_pendulum = (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
+    #     u_cart = (-p_tau * cart_state_error) + (-d_tau * cart_velocity)
 
-    # u = u_cart - u_pendulum
+    u = u_cart - u_pendulum
 
     # velocity_error = 0 - pendulum_angularV
     # u = p_tau * (angle_error + velocity_error)
