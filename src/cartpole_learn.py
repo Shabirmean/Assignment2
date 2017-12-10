@@ -54,10 +54,8 @@ def policyfn(x):
     i_tau = 0.01
 
     error = cos_theta_optimal - math.acos(cos_theta)
-    if error > 0:
-        u = p_tau * error
-    else:
-        u = -p_tau * error
+    u = p_tau * error
+
     # print ("X Distance: " + str(distance))
     # print ("Cart Velocity: " + str(cart_velocity))
     # print ("Angular Velocity: " + str(pendulum_angularV))
