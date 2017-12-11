@@ -36,27 +36,45 @@ from cartpole import CartpoleDraw
 np.set_printoptions(linewidth=500)
 
 
-def getRadInTwoPi(sin_theta):
+def getRadInTwoPi(sin_theta, cos_theta):
     if sin_theta < 0:
-        return math.asin(sin_theta)
+	if cos_theta < 0:
+		angle = (math.pi) + -math.asin(sin_theta)
+	else:
+		angle = (2 * math.pi) + math.asin(sin_theta)
     else:
-        return (2 * math.pi) - math.asin(sin_theta)
+	if cos_theta < 0:
+		angle = (math.pi) - math.asin(sin_theta)
+	else:
+		angle = math.asin(sin_theta)
+    
+    #print ("Sin_theta - " + str(sin_theta) + ", Angle - " + str(angle))
+    return angle 
 
-    # if cos_theta > 0 and sin_theta > 0:
-    #     return math.acos(cos_theta)
-    # elif cos_theta < 0 and sin_theta > 0:
-    #     return math.acos(cos_theta)
-    # elif cos_theta < 0 and sin_theta < 0:
-    #     return (2 * math.pi) - math.acos(cos_theta)
-    # else:
-    #     return (2 * math.pi) - math.acos(cos_theta)
+
+def getRadInTwoPi2(sin_theta, cos_theta):
+    if sin_theta < 0:
+	angle = math.asin(sin_theta)
+    else:
+	angle = (2 * math.pi) - math.asin(sin_theta)
+    
+    #print ("Sin_theta - " + str(sin_theta) + ", Angle - " + str(angle))
+    return angle 
 
 
 # FOR YOU TODO: Fill in this function with a control
 # policy that computes a useful u from the input x
-
+total_theta_error = 0.0
+total_distance_error = 0.0
+prev_theta_error_sign = 1
+prev_distance_error_sign = 1
 
 def policyfn(x):
+    global total_theta_error
+    global total_distance_error
+    global prev_theta_error_sign
+    global prev_distance_error_sign
+
     u = 0
     distance = x[0]
     cart_velocity = x[1]
@@ -64,30 +82,56 @@ def policyfn(x):
     sin_theta = x[3]
     cos_theta = x[4]
 
-    theta_radians = math.acos(cos_theta)
-    theta_degrees = math.degrees(theta_radians)
+    #theta_radians = math.acos(cos_theta)
+    #theta_degrees = math.degrees(theta_radians)
 
     pi = math.pi
     zero = 0.0
 
-    Kp_cart = 0.2
-    Kd_cart = 3.0
+    Kp_cart = 0.3    #0.7
+    Kd_cart = 0.03    #0.2
     Ki_cart = 0.0
 
     Kp_pendulum = 0.2
-    Kd_pendulum = 3.0
+    Kd_pendulum = 0.02
     Ki_pendulum = 0.0
 
     cart_position_error = zero - distance
     cart_speed_error = zero - cart_velocity
-
-    pendulum_position_error = pi - getRadInTwoPi(sin_theta)
+    
+    angle = getRadInTwoPi(sin_theta, cos_theta)
+    pendulum_position_error = pi - angle
     pendulum_speed_error = zero - pendulum_angularV
 
-    u_cart = (Kp_cart * cart_position_error) + (Kd_cart * cart_speed_error)
-    u_pendulum = (Kp_pendulum * pendulum_position_error) + (Kd_pendulum * pendulum_speed_error)
-
-    u = u_cart - u_pendulum
+#    if angle > (pi / 2.0) and angle < (3*pi / 2.0):
+# 	pendulum_position_error = pi - angle
+#    elif angle < (pi / 2.0):	
+#	small_angle = (pi / 2.0) - angle
+#	pendulum_position_error = pi - small_angle
+#    elif angle > (3*pi / 2.0):
+#	small_angle = angle - (3*pi / 2.0)
+# 	small_angle = (2 *  pi) - small_angle
+#	pendulum_position_error = pi - small_angle
+    
+    if (pendulum_position_error * prev_theta_error_sign > 0):
+        total_theta_error += pendulum_position_error
+    else:
+        total_theta_error = pendulum_position_error
+        prev_theta_error_sign *= -1 
+    
+    if (cart_position_error * prev_distance_error_sign > 0):
+        total_distance_error += cart_position_error
+    else:
+        total_distance_error = cart_position_error
+        prev_distance_error_sign *= -1
+    
+    
+    u_cart = (Kp_cart * cart_position_error) + (Kd_cart * cart_speed_error) + (Ki_cart * total_distance_error)
+    u_pendulum = (Kp_pendulum * pendulum_position_error) + (Kd_pendulum * pendulum_speed_error) + (Ki_pendulum * total_theta_error)
+    
+    u = (u_cart + u_pendulum)
+    #print("C_U - " + str(u_cart) + ", P_U - " + str(u_pendulum) + " - " + str(u))
+    #print("C_U - " + str(cart_position_error) + ", P_U - " + str(pendulum_position_error) + " - " + str(u))
 
     # velocity_error = 0 - pendulum_angularV
     # u = p_tau * (angle_error + velocity_error)
