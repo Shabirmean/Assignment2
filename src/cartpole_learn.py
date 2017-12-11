@@ -70,12 +70,12 @@ def policyfn(x):
     pi = math.pi
     zero = 0.0
 
-    Kp_cart = 0.2
-    Kd_cart = 3.0
+    Kp_cart = 0.3
+    Kd_cart = 0.0
     Ki_cart = 0.0
 
     Kp_pendulum = 0.2
-    Kd_pendulum = 3.0
+    Kd_pendulum = 0.0
     Ki_pendulum = 0.0
 
     cart_position_error = zero - distance
