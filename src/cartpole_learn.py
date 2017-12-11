@@ -32,20 +32,31 @@ from plant import gTrig_np
 from cartpole import default_params
 from cartpole import CartpoleDraw
 
-
 # np.random.seed(31337)
 np.set_printoptions(linewidth=500)
 
 
+def getRadInTwoPi(sin_theta):
+    if sin_theta < 0:
+        return math.asin(sin_theta)
+    else:
+        return (2 * math.pi) - math.asin(sin_theta)
+
+    # if cos_theta > 0 and sin_theta > 0:
+    #     return math.acos(cos_theta)
+    # elif cos_theta < 0 and sin_theta > 0:
+    #     return math.acos(cos_theta)
+    # elif cos_theta < 0 and sin_theta < 0:
+    #     return (2 * math.pi) - math.acos(cos_theta)
+    # else:
+    #     return (2 * math.pi) - math.acos(cos_theta)
+
+
 # FOR YOU TODO: Fill in this function with a control
 # policy that computes a useful u from the input x
-prev_angle_error = math.pi
-# prev_cart_pos = 0.0
+
 
 def policyfn(x):
-    global prev_angle_error
-    # global prev_cart_pos
-
     u = 0
     distance = x[0]
     cart_velocity = x[1]
@@ -58,27 +69,23 @@ def policyfn(x):
 
     pi = math.pi
     zero = 0.0
-    p_tau = 0.2
-    d_tau = 0.0
-    i_tau = 0.01
 
-    pendulum_position_error = pi - theta_radians
-    if sin_theta < 0:
-        pendulum_position_error = -pendulum_position_error
+    Kp_cart = 0.2
+    Kd_cart = 3.0
+    Ki_cart = 0.0
 
-    pendulum_speed_error = zero - pendulum_angularV
-    pendulum_state_error = pendulum_position_error + pendulum_speed_error
+    Kp_pendulum = 0.2
+    Kd_pendulum = 3.0
+    Ki_pendulum = 0.0
 
     cart_position_error = zero - distance
     cart_speed_error = zero - cart_velocity
-    cart_state_error = cart_position_error + cart_speed_error
 
-    # if sin_theta > 0:
-    u_pendulum = (p_tau * pendulum_state_error) + (d_tau * pendulum_angularV)
-    u_cart = (p_tau * cart_state_error) + (d_tau * cart_velocity)
-    # else:
-    #     u_pendulum = (-p_tau * pendulum_state_error) + (-d_tau * pendulum_angularV)
-    #     u_cart = (-p_tau * cart_state_error) + (-d_tau * cart_velocity)
+    pendulum_position_error = pi - getRadInTwoPi(sin_theta)
+    pendulum_speed_error = zero - pendulum_angularV
+
+    u_cart = (Kp_cart * cart_position_error) + (Kd_cart * cart_speed_error)
+    u_pendulum = (Kp_pendulum * pendulum_position_error) + (Kd_pendulum * pendulum_speed_error)
 
     u = u_cart - u_pendulum
 
