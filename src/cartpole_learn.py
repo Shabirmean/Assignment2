@@ -69,6 +69,7 @@ total_distance_error = 0.0
 prev_theta_error_sign = 1
 prev_distance_error_sign = 1
 
+#def policyfn(x, p=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]):
 def policyfn(x):
     global total_theta_error
     global total_distance_error
@@ -89,19 +90,27 @@ def policyfn(x):
     zero = 0.0
 
     Kp_cart = 0.3    #0.7
-    Kd_cart = 0.03    #0.2
+    Kd_cart = 0.0    #0.2
     Ki_cart = 0.0
-
-    Kp_pendulum = 0.2
-    Kd_pendulum = 0.02
+    Kp_pendulum = 2.0
+    Kd_pendulum = 0.0
     Ki_pendulum = 0.0
 
+    #Kp_cart = p[1]    #0.7
+    #Kd_cart = p[3]    #0.2
+    #Ki_cart = p[5]
+    #Kp_pendulum = p[0]
+    #Kd_pendulum = p[2]
+    #Ki_pendulum = p[4]
+
     cart_position_error = zero - distance
-    cart_speed_error = zero - cart_velocity
+    #cart_speed_error = zero - cart_velocity
+    cart_speed_error = -cart_velocity
     
     angle = getRadInTwoPi(sin_theta, cos_theta)
     pendulum_position_error = pi - angle
-    pendulum_speed_error = zero - pendulum_angularV
+    #pendulum_speed_error = zero - pendulum_angularV
+    pendulum_speed_error = -pendulum_angularV
 
 #    if angle > (pi / 2.0) and angle < (3*pi / 2.0):
 # 	pendulum_position_error = pi - angle
@@ -127,26 +136,19 @@ def policyfn(x):
     
     
     u_cart = (Kp_cart * cart_position_error) + (Kd_cart * cart_speed_error) + (Ki_cart * total_distance_error)
-    u_pendulum = (Kp_pendulum * pendulum_position_error) + (Kd_pendulum * pendulum_speed_error) + (Ki_pendulum * total_theta_error)
+    u_pendulum = (Kp_pendulum * pendulum_position_error) + \
+                    (Kd_pendulum * pendulum_speed_error) + \
+                            (Ki_pendulum * total_theta_error)
     
     u = (u_cart + u_pendulum)
-    #print("C_U - " + str(u_cart) + ", P_U - " + str(u_pendulum) + " - " + str(u))
-    #print("C_U - " + str(cart_position_error) + ", P_U - " + str(pendulum_position_error) + " - " + str(u))
-
-    # velocity_error = 0 - pendulum_angularV
-    # u = p_tau * (angle_error + velocity_error)
-
-    # print ("X Distance: " + str(distance))
-    # print ("Cart Velocity: " + str(cart_velocity))
-    # print ("Angular Velocity: " + str(pendulum_angularV))
-    # print ("Sin Theta: " + str(sin_theta))
-    # print ("Cos Theta: " + str(math.degrees(math.acos(cos_theta))))
-    # print ()
+    #print ("theta_error: " + str(pendulum_position_error) + ", u_pendulum: " + \
+     #   str(u_pendulum) + ", u: " + str(u))
 
     return np.array([u])
 
 
 def apply_controller(plant, params, H, policy=None):
+#def apply_controller(plant, params, H, p=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0], policy=None):
     '''
     Starts the plant and applies the current policy to the plant for a duration specified by H (in seconds).
 
@@ -197,6 +199,40 @@ def apply_controller(plant, params, H, policy=None):
 
     # stop robot
     plant.stop()
+    return sum_of_error
+
+
+def twiddle(plant, learner_params, H, tol=0.2): 
+    p = [0, 0, 0, 0, 0, 0]
+    dp = [1, 1, 1, 1, 1, 1]
+    plant.reset_state()
+
+    best_err = apply_controller(plant, learner_params['params'], H, p, policyfn)
+
+    it = 0
+    while sum(dp) > tol:
+        print("Iteration {}, best error = {}".format(it, best_err))
+        for i in range(len(p)):
+            p[i] += dp[i]
+            plant.reset_state()
+            err = apply_controller(plant, learner_params['params'], H, p, policyfn)
+
+            if err < best_err:
+                best_err = err
+                dp[i] *= 1.1
+            else:
+                p[i] -= 2 * dp[i]
+                plant.reset_state()
+                err = apply_controller(plant, learner_params['params'], H, p, policyfn)
+
+                if err < best_err:
+                    best_err = err
+                    dp[i] *= 1.1
+                else:
+                    p[i] += dp[i]
+                    dp[i] *= 0.9
+        it += 1
+    return p
 
 
 def main():
@@ -210,6 +246,10 @@ def main():
 
     draw_cp = CartpoleDraw(plant)
     draw_cp.start()
+    
+    #params = twiddle(plant, learner_params, H, tol=0.2)
+    #print("===== DONE =====")
+    #print(params)
 
     # loop to run controller repeatedly
     for i in xrange(N):
