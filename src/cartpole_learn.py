@@ -88,7 +88,6 @@ def policyfn(x, p=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]):
 
     pi = math.pi
     zero = 0.0
-
     #Kp_cart = 50.0    #0.7
     #Kd_cart = 0.0    #0.2
     #Ki_cart = 0.0
@@ -211,11 +210,11 @@ def apply_controller(plant, params, H, best_err, p=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
 def twiddle(plant, learner_params, H, tol=0.2): 
     #[99.77458510000008, -0.8421347170045719, 0.0]
-    #p = [100, 50, 0, 0, 0, 0]
-    #dp = [1, 1, 1, 1, 1, 1]
     #p = [99.77458510000008, -0.8421347170045719, 0]
-    p = [100.02169285205473, -0.9511347170045724, 0.0, 50.0, 0.0, 0.0]
+    #p = [100, 0.0, 0.0, 50.0, 0.0, 0.0]
+    p = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     dp = [1, 1, 1, 1, 1, 1]
+    dp = [0.08513702994615102, 0.03815204244769462, 0.03815204244769462, 0.6333156975085861, 0.172713590700087, 0.042391158275216244]
     plant.reset_state()
 
     best_err = 10000000.0
@@ -224,7 +223,7 @@ def twiddle(plant, learner_params, H, tol=0.2):
     it = 0
     while sum(dp) > tol:
         print("Iteration {}, best error = {}".format(it, best_err))
-        for i in range(3, len(p)):
+        for i in range(len(p)):
             p[i] += dp[i]
             plant.reset_state()
             err = apply_controller(plant, learner_params['params'], H, best_err, p, policyfn)
@@ -262,17 +261,19 @@ def main():
     draw_cp = CartpoleDraw(plant)
     draw_cp.start()
     
-    #params = twiddle(plant, learner_params, H, tol=3.1)
-    #print("===== DONE =====")
-    #print(params)
+    params = twiddle(plant, learner_params, H, tol=0.02)
+    print("===== DONE =====")
+    print(params)
 
     # loop to run controller repeatedly
-    p=[100.02169285205473, -0.9511347170045724, 0.0, 50.77308999999996, 2.1445497382874485, 0.0]
-    best_err = 10000000.0
-    for i in xrange(N):
+    #p=[100.02169285205473, -0.9511347170045724, 0.0, 50.77308999999996, 2.1445497382874485, 0.0]
+    #p=1, 1, 1, 6.339916090496146e-15, 4.244076060580063e-15, 4.244076060580063e-15
+    #p=[98.01000000000003, -0.4304672100000002, 0.0, 49.468559, 0.0, 0.0]
+    #best_err = 10000000.0
+    #for i in xrange(N):
         # execute it on the robot
-        plant.reset_state()
-        apply_controller(plant, learner_params['params'], H, best_err, p, policyfn)
+     #   plant.reset_state()
+     #   apply_controller(plant, learner_params['params'], H, best_err, p, policyfn)
 
 
 if __name__ == '__main__':
