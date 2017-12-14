@@ -35,7 +35,7 @@ def default_params():
     J = 4                                                                   # number of random initial trials
     N = 100                                                                 # learning iterations
     learner_params = {}
-    learner_params['x0'] = [0.3,0,0,0]                                  # initial state mean
+    learner_params['x0'] = [0.3,0,0,np.pi]                                  # initial state mean
     learner_params['S0'] = np.eye(4)*(0.1**2)                               # initial state covariance
     learner_params['angle_dims'] = [3]                                      # angle dimensions
     learner_params['H'] = 4.0                                               # control horizon
